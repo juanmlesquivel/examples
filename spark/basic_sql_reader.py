@@ -2,6 +2,8 @@
 
 """
 Apache Spark program that uses a SQL query as data source to feed into spark.
+
+Intended to be run using spark-submit [this py file].
 """
 
 from pyspark.sql import SparkSession
