@@ -4,17 +4,28 @@
 Apache Spark program that uses a SQL query as data source to feed into spark.
 
 Intended to be run using spark-submit [this py file].
+Note that it's possible that adding the JDBC driver path is needed, for
+instance:
+  --driver-class-path [path to]/postgresql-42.1.4.jar
 """
 
 from pyspark.sql import SparkSession
 
-logFile = "/usr/local/spark/README.md"
-spark = SparkSession.builder.appName("BasicSQL").master("local").getOrCreate()
-logData = spark.read.text(logFile).cache()
+spark = SparkSession \
+    .builder \
+    .appName("Basic JDBC reader") \
+    .getOrCreate()
 
-numAs = logData.filter(logData.value.contains('a')).count()
-numBs = logData.filter(logData.value.contains('b')).count()
+df = spark \
+    .read \
+    .format("jdbc") \
+    .option("url", "jdbc:postgresql://localhost/jesquivel") \
+    .option("user", "test") \
+    .option("password", "test") \
+    .option("dbtable", "transactions") \
+    .load()
 
-print("Lines with a: %i, lines with b: %i" % (numAs, numBs))
+df.printSchema()
 
-spark.stop()
+sumByCustomer = df.groupBy("customer_id").sum()
+sumByCustomer.show()
